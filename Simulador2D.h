@@ -135,4 +135,58 @@ void Simulador2D<T>::limpiarGrid() {
     }
 }
 
+template <typename T>
+void Simulador2D<T>::agregarFuente(T valor) {
+    if(_numFuentes >= _capacidadFuentes) {
+        int nuevaCapacidad = _capacidadFuentes * 2;
+        T* nuevoVector = new T[nuevaCapacidad];
+        
+        for(int i = 0; i < _numFuentes; i++) {
+            nuevoVector[i] = _fuentes[i];
+        }
+        
+        delete[] _fuentes;
+        _fuentes = nuevoVector;
+        _capacidadFuentes = nuevaCapacidad;
+    }
+    
+    _fuentes[_numFuentes] = valor;
+    _numFuentes++;
+}
+
+template <typename T>
+T Simulador2D<T>::getFuente(int indice) const {
+    if(indice >= 0 && indice < _numFuentes) {
+        return _fuentes[indice];
+    }
+    return T(0);
+}
+
+template <typename T>
+int Simulador2D<T>::getNumFuentes() const {
+    return _numFuentes;
+}
+
+template <typename T>
+void Simulador2D<T>::aplicarFuenteAlGrid(int indiceFuente, int fila, int columna) {
+    if(indiceFuente >= 0 && indiceFuente < _numFuentes && _indicesValidos(fila, columna)) {
+        _grid[fila][columna] = _fuentes[indiceFuente];
+    }
+}
+
+template <typename T>
+void Simulador2D<T>::setConstante(int indice, float valor) {
+    if(indice >= 0 && indice < 3) {
+        _constantes[indice] = valor;
+    }
+}
+
+template <typename T>
+float Simulador2D<T>::getConstante(int indice) const {
+    if(indice >= 0 && indice < 3) {
+        return _constantes[indice];
+    }
+    return 0.0f;
+}
+
 #endif 
