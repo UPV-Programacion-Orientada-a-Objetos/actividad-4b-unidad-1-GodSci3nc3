@@ -18,6 +18,9 @@ private:
     
     void _inicializarGrid();
     bool _indicesValidos(int fila, int columna) const;
+    T** _crearMatrizTemporal();
+    void _copiarMatriz(T** origen, T** destino);
+    void _liberarMatrizTemporal(T** matriz);
 
 public:
     Simulador2D(int f, int c);
@@ -187,6 +190,78 @@ float Simulador2D<T>::getConstante(int indice) const {
         return _constantes[indice];
     }
     return 0.0f;
+}
+
+template <typename T>
+T** Simulador2D<T>::_crearMatrizTemporal() {
+    T** temporal = new T*[_filas];
+    for(int i = 0; i < _filas; i++) {
+        temporal[i] = new T[_columnas];
+    }
+    return temporal;
+}
+
+template <typename T>
+void Simulador2D<T>::_copiarMatriz(T** origen, T** destino) {
+    for(int i = 0; i < _filas; i++) {
+        for(int j = 0; j < _columnas; j++) {
+            destino[i][j] = origen[i][j];
+        }
+    }
+}
+
+template <typename T>
+void Simulador2D<T>::_liberarMatrizTemporal(T** matriz) {
+    for(int i = 0; i < _filas; i++) {
+        delete[] matriz[i];
+    }
+    delete[] matriz;
+}
+
+template <typename T>
+void Simulador2D<T>::simularPaso() {
+    T** temporal = _crearMatrizTemporal();
+    _copiarMatriz(_grid, temporal);
+    
+    for(int i = 1; i < _filas - 1; i++) {
+        for(int j = 1; j < _columnas - 1; j++) {
+            T arriba = temporal[i-1][j];
+            T abajo = temporal[i+1][j];
+            T izquierda = temporal[i][j-1];
+            T derecha = temporal[i][j+1];
+            
+            _grid[i][j] = (arriba + abajo + izquierda + derecha) / T(4);
+        }
+    }
+    
+    _liberarMatrizTemporal(temporal);
+}
+
+template <typename T>
+void Simulador2D<T>::redimensionarGrid(int nuevaF, int nuevaC) {
+    T** nuevoGrid = new T*[nuevaF];
+    for(int i = 0; i < nuevaF; i++) {
+        nuevoGrid[i] = new T[nuevaC];
+    }
+    
+    for(int i = 0; i < nuevaF; i++) {
+        for(int j = 0; j < nuevaC; j++) {
+            if(i < _filas && j < _columnas) {
+                nuevoGrid[i][j] = _grid[i][j];
+            } else {
+                nuevoGrid[i][j] = T(0);
+            }
+        }
+    }
+    
+    for(int i = 0; i < _filas; i++) {
+        delete[] _grid[i];
+    }
+    delete[] _grid;
+    
+    _grid = nuevoGrid;
+    _filas = nuevaF;
+    _columnas = nuevaC;
 }
 
 #endif 
